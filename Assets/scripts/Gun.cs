@@ -1,10 +1,11 @@
-using UnityEngine;
-using UnityEngine.SceneManagement;
-using UnityEngine.UI;
-using System.Collections;
+using System.Collections.Generic;
 using TMPro;
 using UnityEngine.EventSystems;
-using System.Collections.Generic;
+using UnityEngine.SceneManagement;
+using UnityEngine;
+using UnityEngine.UI;
+using System.Collections;
+
 
 public class Gun : MonoBehaviour
 {
@@ -33,6 +34,7 @@ public class Gun : MonoBehaviour
         audioSource = GetComponent<AudioSource>();
 
         if (muzzleFlash != null) muzzleFlash.SetActive(false);
+        if (balloonPopEffect != null) balloonPopEffect.SetActive(false); // Ensure balloon pop effect is inactive
 
         UpdateLivesText();
         pauseButton.onClick.AddListener(TogglePause);
@@ -76,8 +78,8 @@ public class Gun : MonoBehaviour
         {
             if (hit.collider.CompareTag("Balloon"))
             {
-                // Play the particle effect at the balloon's position
-                Instantiate(balloonPopEffect, hit.transform.position, Quaternion.identity);
+                // Trigger the reusable pop effect
+                StartCoroutine(ShowBalloonPopEffect(hit.transform.position));
 
                 // Set the balloon inactive
                 hit.collider.gameObject.SetActive(false);
@@ -123,6 +125,19 @@ public class Gun : MonoBehaviour
         }
     }
 
+    private IEnumerator ShowBalloonPopEffect(Vector3 position)
+    {
+        if (balloonPopEffect != null)
+        {
+            balloonPopEffect.transform.position = position; // Move to hit position
+            balloonPopEffect.SetActive(true); // Activate the effect
+
+            yield return new WaitForSeconds(0.3f); // Show for 0.3 seconds
+
+            balloonPopEffect.SetActive(false); // Deactivate the effect
+        }
+    }
+
     private IEnumerator ShowMuzzleFlash()
     {
         isFlashActive = true;
@@ -134,6 +149,7 @@ public class Gun : MonoBehaviour
         muzzleFlash.SetActive(false);
         isFlashActive = false;
     }
+
 
     private void LoseLife()
     {
